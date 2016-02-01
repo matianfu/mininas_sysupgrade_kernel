@@ -1,0 +1,58 @@
+#!/bin/busybox sh
+
+DASH="----------------------------------------"
+
+mount -t devtmpfs   none            /dev
+mount -t proc       none            /proc
+mount -t sysfs      none            /sys
+mount -t devpts     none            /dev/pts
+
+echo ""
+echo ""
+echo ""
+echo $DASH
+echo $DASH
+echo "Sysupgrade"
+echo $DASH
+echo $DASH
+echo "init script, PID:$$"
+echo $DASH
+echo $DASH
+echo "sleep 1 second waiting for mmc"
+sleep 1
+echo $DASH
+echo $DASH
+
+mkdir pre
+
+# this can't be failed
+echo "pre-mounting mmcblk0p2"
+mount -t ext4 /dev/mmcblk0p2 /pre
+if [ ! -e /pre/boot/sysupgrade ]; then
+    echo "sysupgrade script not found"
+    rm -rf /pre/boot/cmdline
+    reboot -f
+fi
+echo "done"
+echo $DASH
+echo ""
+
+# cp sysupgrade script
+echo "copy sysupgrade and umount pre-mount"
+cp /pre/boot/sysupgrade .
+chmod a+x sysupgrade
+umount /pre
+echo "done"
+echo $DASH
+echo ""
+
+# exec
+echo "switching to sysupgrade"
+echo $DASH
+echo $DASH
+./sysupgrade
+
+# should never be back
+
+
+
